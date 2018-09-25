@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Js 音乐播放器—歌词同步</title>
+<meta name="Keywords" content="">
+<meta name="Description" content="">
+<style type="text/css">
+	*{
+		padding: 0;
+		margin: 0;
+	}
+	body{
+		font-size: 16px;
+		font-family: "微软雅黑";
+		background: url(images/bg.jpg);
+	}
+	ul,li {
+		list-style: none;
+	}
+	#box {
+		width: 630px;
+		border: 3px solid pink;
+		border-radius: 10px;
+		box-shadow:  0 0 40px pink;
+		margin: 40px 0 0 40px;
+		overflow: hidden;
+	} 
+	#box img {
+		display: block;
+		float: left;
+	}
+	#box .lrcbox {
+		border-left: 3px solid pink;
+		width: 377px;
+		height: 280px;
+		float: left;
+	}
+	#box .lrcbox ul li {
+		height: 24px;
+		padding: 8px;
+		transition: all 0.3s ease;
+	}
+	#lrc_list {
+		transition: all 0.3s ease;
+	}
+	#box .lrcbox ul li.hover{
+		color: pink;
+	}
+	#audio {
+		margin: 20px 0 0 40px;
+		border-radius: 10px;
+	}
+</style>
+</head>
+<body>
+	<div id="box">
+		<img src="images/1.gif" width="248" height="280"/>
+		<div class="lrcbox">
+			<ul id="lrc_list">
+			</ul>
+		</div>
+	</div>
+	<audio id="audio" src="mp3/2.mp3" autoplay loop controls = "controls"></audio>
+	<textarea id="lrcnt" style="display: none;">
+		[00:02.00]求佛
+		[00:04.40]词曲：陈超 
+		[00:06.48]演唱：誓言
+		[00:08.48]
+		[00:35.50]当月光洒在我的脸上
+		[00:39.36]我想我就快变了模样
+		[00:44.25]有一种叫做撕心裂肺的汤
+		[00:48.16]喝了它有神奇的力量
+		[00:51.30]
+		[00:52.93]闭上眼   看见天堂
+		[00:56.02]那是藏着你笑的地方
+		[01:00.96]我躲开无数个猎人的枪
+		[01:04.78]赶走坟墓爬出的忧伤
+		[01:08.00]
+		[01:08.56]为了你  我变成狼人模样
+		[01:12.67]为了你  染上了疯狂
+		[01:16.73]为了你  穿上厚厚的伪装
+		[01:20.99]为了你  换了心肠
+		[01:24.02]
+		[01:26.11]我们还能不能再见面
+		[01:29.10]我在佛前苦苦求了几千年
+		[01:33.26]愿意用几世换我们一世情缘
+		[01:37.45]希望可以感动上天
+		[01:41.08]
+		[01:41.68]我们还能不能能不能再见面
+		[01:45.79]我在佛前苦苦求了几千年
+		[01:49.96]当我在踏过这条奈何桥之前
+		[01:54.13]让我再吻一吻你的脸
+		[01:58.05]
+		[02:33.20]闭上眼   看见天堂
+		[02:36.16]那是藏着你笑的地方
+		[02:41.22]我躲开无数个猎人的枪
+		[02:44.97]赶走坟墓爬出的忧伤
+		[02:48.08]
+		[02:48.68]为了你  我变成狼人模样
+		[02:52.82]为了你  染上了疯狂
+		[02:57.04]为了你  穿上厚厚的伪装
+		[03:01.23]为了你  换了心肠
+		[03:04.10]
+		[03:06.03]我们还能不能再见面
+		[03:09.24]我在佛前苦苦求了几千年
+		[03:13.38]愿意用几世换我们一世情缘
+		[03:17.64]希望可以感动上天
+		[03:21.23]
+		[03:21.83]我们还能不能能不能再见面
+		[03:25.90]我在佛前苦苦求了几千年
+		[03:30.12]当我在踏过这条奈何桥之前
+		[03:34.38]让我再吻一吻你的脸
+		[03:39.11]
+		[03:39.71]我们还能不能再见面
+		[03:42.68]我在佛前苦苦求了几千年
+		[03:46.80]愿意用几世换我们一世情缘
+		[03:51.00]希望可以感动上天
+		[03:55.28]我们还能不能能不能再见面
+		[03:59.29]我在佛前苦苦求了几千年
+		[04:03.63]当我在踏过这条奈何桥之前
+		[04:07.59]让我再吻一吻你的脸
+		[04:12.02]让我再吻一吻你的脸
+		[04:16.11]让我再吻一吻你的脸
+		[04:21.92]
+	</textarea>
+	<script type="text/javascript">
+		function $(id){
+			return document.getElementById(id);
+		};
+		var audioDom = $("audio");
+		window.onload= function(){
+			lrc.init($("lrcnt").value);
+			//当前播放监听时间
+			audioDom.ontimeupdate = function(){
+				var t = parseInt(this.currentTime);
+				lrc.jump(t,this.currentTime);
+			};
+		};
+		var lrc = {
+			//正则表达式 判断消除两边的空格
+			regex_trim: /^\s+|\s+$/,
+			init: function(lrctxts){
+				//把歌词分割成数组
+				var txts = lrctxts.split("\n");
+				//alert(txts);
+				var html = "";
+				//遍历数组分割歌词和时间
+				for (var i = 0; i<txts.length ; i++ )
+				{	
+					//左右空格处理
+					var item = txts[i].replace(this.regex_trim,"")
+					//alert(item.length);
+					//歌词和时间的分割
+					var ms = item.split("]");
+					//alert(ms[0]+"====="+ms[1]);
+					//时间的处理 
+					var mt = ms[0].replace("[","").split(":");
+					//alert(mt);
+					//把时间绑定给对应的每个作为id方便获取
+					var m = parseInt(mt[0]*60+mt[1]*1);
+					var txt = ms[1];
+					html+="<li id='t_"+m+"'>"+txt+"</li>";
+				}
+				$("lrc_list").innerHTML +=html;
+			},
+			//歌词跳动
+			jump:function (duration,sm){
+				console.log(duration+"====="+sm);
+				var dom = $("t_"+duration);
+				var lrcbox = $("lrc_list");
+				if (dom)
+				{
+					var arr = this.siblings(dom);
+					for (var i = 0; i<arr.length ; i++ )
+					{
+						arr[i].className = "";
+					}
+					dom.className = "hover";
+					var index = this.indexof(dom)-3;
+					lrcbox.style.marginTop = (index<0?0:index)*-40+"px";
+				}
+			},
+			indexof: function(dom){
+				//获取所有ul下面的li
+				var listDoms = dom.parentElement.children;
+				var index = 0;
+				//如果匹配上跳出循环并返回该值
+				for (var i = 0; i<listDoms.length ; i++ )
+				{
+					if (listDoms[i] == dom)
+					{
+						index = i;
+						break;
+					}
+				}
+				return index;
+			},
+			siblings: function(dom){
+				//获取所有ul下面的li
+				var listDoms = dom.parentElement.children;
+				var arr = [];
+				//如果匹配上跳出循环并返回该值
+				for (var i = 0; i<listDoms.length ; i++ )
+				{
+					if (listDoms[i] != dom)
+					{
+						arr.push(listDoms[i]);
+					}
+				}
+				return arr;
+			}
+		};
+	</script>
+</body>
+</html>
